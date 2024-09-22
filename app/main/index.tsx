@@ -1,10 +1,29 @@
-import { Image, StyleSheet, View, Button } from 'react-native';
-
+import { Image, StyleSheet, View, Text, Pressable } from 'react-native';
 import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
+import React, { useState} from 'react';
+import mainStyles from '../MainStyleSheet';
+import { getAuth, onAuthStateChanged } from '../firebase'
 
-export default function HomeScreen({ navigation }) {
+export default function HomeScreen({ navigation, route }) {
+  const [email, setEmail] = useState('');
+  const auth = getAuth();
+  onAuthStateChanged(auth, (user) => {
+    if (user && user.email) {
+      setEmail(user.email)
+    } else {
+      setEmail('')
+    }
+  })
+  const logout = () => {
+    auth
+    .signOut()
+    .then(() => {
+      navigation.navigate('start')
+    })
+    .catch(error => alert(error.message))
+  }
   return (
     <ParallaxScrollView
       headerBackgroundColor={{ light: '#6F4E37', dark: '#6F4E37' }}
@@ -36,16 +55,10 @@ export default function HomeScreen({ navigation }) {
         </ThemedText>
       </ThemedView>
       <View>
-      <Button
-        title="Sign Up"
-        onPress={() => navigation.navigate('signup')}
-        color='#ffffff'
-      />
-      <Button
-        title="Sign In"
-        onPress={() => navigation.navigate('signin')}
-        color='#ffffff'
-      />
+        <Text style={mainStyles.label}>{email}</Text>
+        <Pressable style={mainStyles.button} onPress={logout}>
+          <Text style={mainStyles.buttonText}>Logout</Text>
+        </Pressable>
       </View>
     </ParallaxScrollView>
   );

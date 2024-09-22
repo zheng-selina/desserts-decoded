@@ -1,9 +1,10 @@
-import { View, Text, TextInput, Button, StyleSheet } from "react-native";
+import { View, Text, TextInput, Button, StyleSheet, Pressable } from "react-native";
 import { useForm, Controller, SubmitHandler } from "react-hook-form"
 import mainStyles from './MainStyleSheet'
 import RNPickerSelect from 'react-native-picker-select';
 import React, { useState } from 'react';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { auth, createUserWithEmailAndPassword } from "./firebase";
 
 type FormValues = {
     email: string, 
@@ -14,7 +15,9 @@ type FormValues = {
     gender: string,
     biography: string
 }
-export default function SignUp() {
+export default function SignUp({ navigation }) {
+    const goToSignIn = () => navigation.navigate('signin');
+
     const {
         control,
         handleSubmit,
@@ -29,9 +32,13 @@ export default function SignUp() {
       };
 
       const onSubmit: SubmitHandler<FormValues> = (data) => {
-        console.log('Sign Up data')
-        console.log(data)
-      }
+        createUserWithEmailAndPassword(auth, data.email, data.password)
+        .then((userCredential) => {
+            const user = userCredential.user;
+            console.log('User logged in');
+            navigation.navigate('main');
+        })
+    }
       
       return (
         <View style={{ height: '100%', backgroundColor: '#6F4E37', padding: 20 }}>
@@ -159,8 +166,13 @@ export default function SignUp() {
                 )}
                 name="biography"
             />
-
-      <Button title="Submit" onPress={handleSubmit(onSubmit)} color='#ffffff' />
+        <Pressable style={mainStyles.button} onPress={handleSubmit(onSubmit)}>
+            <Text style={mainStyles.buttonText}>Sign Up</Text>
+        </Pressable>
+      <Text style={mainStyles.label}>Already have an account?</Text>
+      <Pressable style={mainStyles.button} onPress={goToSignIn}>
+            <Text style={mainStyles.buttonText}>Sign In</Text>
+        </Pressable>
     </View>
     )
 }

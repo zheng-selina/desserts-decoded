@@ -1,13 +1,16 @@
-import { View, Text, TextInput, Button } from "react-native";
+import { View, Text, TextInput, Button, Pressable } from "react-native";
 import { useForm, Controller, SubmitHandler } from "react-hook-form"
 import mainStyles from './MainStyleSheet'
 import React from 'react';
+import { auth, signInWithEmailAndPassword } from './firebase'
 
 type FormValues = {
   username: string
   password: string
 }
-export default function SignIn() {
+export default function SignIn({ navigation }) {
+    const goToSignUp = () => navigation.navigate('signup');
+
     const {
         control,
         handleSubmit,
@@ -15,8 +18,14 @@ export default function SignIn() {
       } = useForm<FormValues>()
 
     const onSubmit: SubmitHandler<FormValues> = (data) => {
-        console.log('Sign In data:')
-        console.log(data)
+        signInWithEmailAndPassword(auth, data.username, data.password)
+        .then((userCredential) => {
+            const user = userCredential.user;
+            console.log(user.email);
+            navigation.navigate('main', {
+                email: user.email
+            });
+        })
     }
 
     return (
@@ -52,7 +61,13 @@ export default function SignIn() {
                 )}
                 name="password"
             />
-            <Button title="Sign In" onPress={handleSubmit(onSubmit)} color='#ffffff' />
+            <Pressable style={mainStyles.button} onPress={handleSubmit(onSubmit)}>
+                <Text style={mainStyles.buttonText}>Sign In</Text>
+            </Pressable>      
+            <Text style={mainStyles.label}>Not a member yet?</Text>
+            <Pressable style={mainStyles.button} onPress={goToSignUp}>
+                <Text style={mainStyles.buttonText}>Sign Up</Text>
+            </Pressable>      
         </View>
     )
 }

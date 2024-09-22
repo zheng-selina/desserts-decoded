@@ -27,14 +27,18 @@ const mainStyles = StyleSheet.create({
         paddingLeft: 12,
     },
     button: {
-        height: 40,
+        height: 50,
         marginLeft: 12,
         marginRight: 12,
-        marginBottom: 12,
+        marginBottom: 20,
         padding: 10,
-        borderWidth: .3,
-        borderColor: '#ffffff',
-        borderRadius: 20
+        backgroundColor: '#483C32',
+        borderRadius: 30
+    },
+    buttonText: {
+        color: '#ffffff',
+        textAlign: 'center',
+        fontSize: 20
     }
   });
 
