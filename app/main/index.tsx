@@ -1,21 +1,38 @@
-import { Image, StyleSheet, View, Text, Pressable } from 'react-native';
+import { Image, StyleSheet, View, Text, Pressable, ActivityIndicator } from 'react-native';
 import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
-import React, { useState} from 'react';
+import React, { useEffect, useState} from 'react';
 import mainStyles from '../MainStyleSheet';
-import { getAuth, onAuthStateChanged } from '../firebase'
+import { auth, firestore } from '../firebase'
+import { doc, DocumentData, getDoc } from 'firebase/firestore';
 
-export default function HomeScreen({ navigation, route }) {
-  const [email, setEmail] = useState('');
-  const auth = getAuth();
-  onAuthStateChanged(auth, (user) => {
-    if (user && user.email) {
-      setEmail(user.email)
-    } else {
-      setEmail('')
-    }
-  })
+export default function HomeScreen({ navigation }) {
+  const [userData, setUserData] = useState<DocumentData>();
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const user = auth.currentUser;
+        if (user) {
+          const userDoc = await getDoc(doc(firestore, 'users', user.uid));
+          if (userDoc.exists()) {
+            setUserData(userDoc.data());
+          }  else {
+            console.log('No such document');
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserData();
+  }, [])
+  
   const logout = () => {
     auth
     .signOut()
@@ -23,6 +40,10 @@ export default function HomeScreen({ navigation, route }) {
       navigation.navigate('start')
     })
     .catch(error => alert(error.message))
+  }
+
+  if (loading) {
+    return <ActivityIndicator size="large" color="#0782F9"/>;
   }
   return (
     <ParallaxScrollView
@@ -33,6 +54,10 @@ export default function HomeScreen({ navigation, route }) {
           style={styles.dessertsHome}
         />
       }>
+        <View>
+        <Text style={mainStyles.label}>{'Email: ' + userData?.email}</Text>
+        <Text style={mainStyles.label}>{'Name: ' + userData?.name}</Text>
+        </View>
       <ThemedView style={styles.titleContainer}>
         <ThemedText type="title">Welcome to Desserts Decoded!</ThemedText>
       </ThemedView>
@@ -55,7 +80,6 @@ export default function HomeScreen({ navigation, route }) {
         </ThemedText>
       </ThemedView>
       <View>
-        <Text style={mainStyles.label}>{email}</Text>
         <Pressable style={mainStyles.button} onPress={logout}>
           <Text style={mainStyles.buttonText}>Logout</Text>
         </Pressable>

@@ -1,10 +1,13 @@
-import { View, Text, TextInput, Button, StyleSheet, Pressable } from "react-native";
+import { View, Text, TextInput, StyleSheet, Pressable } from "react-native";
 import { useForm, Controller, SubmitHandler } from "react-hook-form"
 import mainStyles from './MainStyleSheet'
 import RNPickerSelect from 'react-native-picker-select';
 import React, { useState } from 'react';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { auth, createUserWithEmailAndPassword } from "./firebase";
+import { auth, createUserWithEmailAndPassword, firestore } from "./firebase";
+import { doc, setDoc } from 'firebase/firestore';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import moment from "moment";
 
 type FormValues = {
     email: string, 
@@ -25,18 +28,29 @@ export default function SignUp({ navigation }) {
       } = useForm<FormValues>()
       
       const [date, setDate] = useState(new Date());
-    
-      const onChange = (selectedDate: any) => {
-        const currentDate = selectedDate;
-        setDate(currentDate);
-      };
 
       const onSubmit: SubmitHandler<FormValues> = (data) => {
         createUserWithEmailAndPassword(auth, data.email, data.password)
-        .then((userCredential) => {
+        .then(async (userCredential) => {
             const user = userCredential.user;
             console.log('User logged in');
+
+            await setDoc(doc(firestore, 'users', user.uid), {
+                email: user.email,
+                name: data.name,
+                biography: data.biography,
+                birthdate: moment(data.birthdate).format('MM/DD/YYYY'),
+                country: data.country,
+                gender: data.gender,
+                createdAt: new Date()
+            })
             navigation.navigate('main');
+
+            await AsyncStorage.setItem('userName', data.name);
+            await AsyncStorage.setItem('userEmail', data.email);
+        })
+        .catch((error) => {
+            alert(error.message)
         })
     }
       
