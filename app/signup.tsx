@@ -33,7 +33,6 @@ export default function SignUp({ navigation }) {
         createUserWithEmailAndPassword(auth, data.email, data.password)
         .then(async (userCredential) => {
             const user = userCredential.user;
-            console.log('User logged in');
 
             await setDoc(doc(firestore, 'users', user.uid), {
                 email: user.email,
