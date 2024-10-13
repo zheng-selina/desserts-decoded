@@ -31,7 +31,6 @@ export default function SignIn({ navigation }) {
     useEffect(() => {
         const loadUserData = async () => {
             try {
-                const savedName = await AsyncStorage.getItem('userName');
                 const savedEmail = await AsyncStorage.getItem('userEmail');
 
                 if (savedEmail) {
