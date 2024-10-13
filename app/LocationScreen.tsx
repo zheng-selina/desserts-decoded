@@ -25,7 +25,6 @@ export default function LocationScreen() {
                 latitudeDelta: 0.01,
                 longitudeDelta: 0.01
             });
-            console.log(location)
         })();
     }, []);
 
