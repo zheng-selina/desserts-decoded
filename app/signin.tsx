@@ -21,7 +21,6 @@ export default function SignIn({ navigation }) {
       } = useForm<FormValues>()
 
     const onSubmit: SubmitHandler<FormValues> = (data) => {
-        console.log(data.username);
         signInWithEmailAndPassword(auth, data.username, data.password)
         .then((userCredential) => {
             const user = userCredential.user;
